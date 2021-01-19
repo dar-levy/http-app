@@ -15,24 +15,32 @@ class App extends Component {
 
   handleAdd = async () => {
     const obj = { title: "a", body: "b" };
-    const { data: post } = await axios.post(apiEndPoint, obj);
     const posts = [post, ...this.state.posts];
     this.setState({ posts });
+    const { data: post } = await axios.post(apiEndPoint, obj);
   };
 
   handleUpdate = async (post) => {
     post.title = "UPDATED";
-    await axios.put(`${apiEndPoint}/${post.id}`, post);
     const posts = [...this.state.posts];
     const index = posts.indexOf(post);
     posts[index] = { ...post };
     this.setState({ posts });
+    await axios.put(`${apiEndPoint}/${post.id}`, post);
   };
 
   handleDelete = async (post) => {
-    await axios.delete(`${apiEndPoint}/${post.id}`);
+    const originalPosts = this.state.posts;
     const posts = this.state.posts.filter((p) => p.id !== post.id);
     this.setState({ posts });
+
+    try {
+      await axios.delete(`${apiEndPoint}/${post.id}`);
+      throw new Error("");
+    } catch (ex) {
+      alert("Something failed while deleting a post!");
+      this.setState({ posts: originalPosts });
+    }
   };
 
   render() {
