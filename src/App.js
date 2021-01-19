@@ -1,26 +1,51 @@
 import React, { Component } from "react";
+import axios from "axios";
 import "./App.css";
 
+const apiEndPoint = "http://jsonplaceholder.typicode.com/posts";
 class App extends Component {
   state = {
-    posts: []
+    posts: [],
   };
 
-  handleAdd = () => {
-    console.log("Add");
+  async componentDidMount() {
+    const { data: posts } = await axios.get(apiEndPoint);
+    this.setState({ posts });
+  }
+
+  handleAdd = async () => {
+    const obj = { title: "a", body: "b" };
+    const posts = [post, ...this.state.posts];
+    this.setState({ posts });
+    const { data: post } = await axios.post(apiEndPoint, obj);
   };
 
-  handleUpdate = post => {
-    console.log("Update", post);
+  handleUpdate = async (post) => {
+    post.title = "UPDATED";
+    const posts = [...this.state.posts];
+    const index = posts.indexOf(post);
+    posts[index] = { ...post };
+    this.setState({ posts });
+    await axios.put(`${apiEndPoint}/${post.id}`, post);
   };
 
-  handleDelete = post => {
-    console.log("Delete", post);
+  handleDelete = async (post) => {
+    const originalPosts = this.state.posts;
+    const posts = this.state.posts.filter((p) => p.id !== post.id);
+    this.setState({ posts });
+
+    try {
+      await axios.delete(`${apiEndPoint}/${post.id}`);
+      throw new Error("");
+    } catch (ex) {
+      alert("Something failed while deleting a post!");
+      this.setState({ posts: originalPosts });
+    }
   };
 
   render() {
     return (
-      <React.Fragment>
+      <main className="container">
         <button className="btn btn-primary" onClick={this.handleAdd}>
           Add
         </button>
@@ -33,7 +58,7 @@ class App extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.state.posts.map(post => (
+            {this.state.posts.map((post) => (
               <tr key={post.id}>
                 <td>{post.title}</td>
                 <td>
@@ -56,7 +81,7 @@ class App extends Component {
             ))}
           </tbody>
         </table>
-      </React.Fragment>
+      </main>
     );
   }
 }
